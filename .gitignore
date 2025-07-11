@@ -1,0 +1,8 @@
+# ignore any exe files
+*.exe
+
+#ignore batch file
+*.bat
+
+#ignore sublime build
+*.sublime-build
