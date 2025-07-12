@@ -23,7 +23,7 @@ public:
 		sun = LoadTexture("graphics/sun.png");
 		position.x = GetScreenWidth() / 2;
 		position.y = GetScreenHeight() / 2;
-		scale = 0.3f;
+		scale = 1.9f;
 		rotation = 0.1f;
 		source = { 0.0f, 0.0f, (float)sun.width, (float)sun.height };
 		dest = {position.x, position.y, sun.width * scale, sun.height * scale};
@@ -33,7 +33,7 @@ public:
 	void draw()
 	{
 		DrawTexturePro(sun, source, dest, origin, rotation, WHITE);
-		rotation += 0.08f;
+		rotation += 0.03f;
 	}
 
 };
@@ -83,6 +83,8 @@ class Planets
    	{
    		sun-> draw();
 
+		DrawEllipseLines(sun->position.x, sun->position.y, OrbitDistance.x, OrbitDistance.y, GRAY);
+
 		DrawTexturePro(planet, source, dest, origin, rotation, WHITE);
 		rotation += 0.5f;
 	}
@@ -109,13 +111,24 @@ int main()
 	Texture2D mercury = LoadTexture("graphics/mercury.png");
 	Texture2D venus = LoadTexture("graphics/venus.png");
 	Texture2D mars = LoadTexture("graphics/mars.png");
-	float scaleFactor = 0.4f;
+	Texture2D jupiter = LoadTexture("graphics/jupiter.png");
+	Texture2D saturn_rings = LoadTexture("graphics/saturn-rings.png");
+	Texture2D saturn = LoadTexture("graphics/saturn.png");
+	Texture2D uranus = LoadTexture("graphics/uranus.png");
+	Texture2D neptune = LoadTexture("graphics/neptune.png");
+
 	vector<Planets> planets;
 
-	planets.push_back(Planets(130, 130, 0.15f, 0.005, 0.5f, mercury, &sun)); 
-	planets.push_back(Planets(210, 210, 0.08f, 0.0035, 0.5f, venus, &sun));  
-	planets.push_back(Planets(310, 310, 0.038f, 0.003, 0.5f, earth, &sun));   
-	planets.push_back(Planets(430,430, 0.15f, 0.003, 0.5f, mars, &sun)); 
+	planets.push_back(Planets(528, 480, 0.4f, 0.005, 0.5f, mercury, &sun)); 
+	planets.push_back(Planets(680, 680, 0.2f, 0.0035, 0.5f, venus, &sun));  
+	planets.push_back(Planets(1050, 1050, 0.5f, 0.003, 0.5f, earth, &sun));   
+	planets.push_back(Planets(1480,1350, 0.3f, 0.003, 0.5f, mars, &sun)); 
+	planets.push_back(Planets(1750,1750, 0.8f, 0.0028, 0.5f, jupiter, &sun)); 
+	planets.push_back(Planets(2150,2150, 0.6f, 0.0027, 0.5f, saturn_rings, &sun));
+	planets.push_back(Planets(2150,2150, 0.7f, 0.0027, 0.5f, saturn, &sun));
+	planets.push_back(Planets(2650,2650, 0.8f, 0.0026, 0.5f, uranus, &sun));
+	planets.push_back(Planets(3000,3000, 0.6f, 0.0025, 0.5f, neptune, &sun));
+
 
 	SetTargetFPS(60);
 
