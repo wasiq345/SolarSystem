@@ -100,11 +100,19 @@ int main()
 
 	InitWindow(ScreenWidth, ScreenHeight, "SolarSystem");
 
+	enum gameStates
+	{
+		MAIN_MENU,
+		GAMEPLAY,
+		EXIT
+	};
+	gameStates currentState = MAIN_MENU;
+
 	Camera2D camera = {0};
 	camera.target = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f }; 
 	camera.offset = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f }; 
 	camera.rotation = 0.0f;
-	camera.zoom = 0.4f;
+	camera.zoom = 0.1f;
 
 	Sun sun;
 	Texture2D earth = LoadTexture("graphics/earth.png");
@@ -134,6 +142,29 @@ int main()
 
 	while(!WindowShouldClose())
 	{
+		Vector2 menuView = {sun.position.x - 2800, sun.position.y};
+		Vector2 gameplayView = sun.position;
+		Vector2 mousePos = GetMousePosition();
+		float transitionSpeed = 0.04f;
+
+		if(currentState == EXIT)
+		{
+			CloseWindow();
+			return 0;
+		}
+
+		if(currentState == MAIN_MENU)
+		{
+			camera.target.x += (menuView.x - camera.target.x) * transitionSpeed;
+    		camera.target.y += (menuView.y - camera.target.y) * transitionSpeed;
+		}
+
+		else if (currentState == GAMEPLAY)
+		{
+			camera.target.x += (gameplayView.x - camera.target.x) * transitionSpeed;
+			camera.target.y += (gameplayView.y - camera.target.y) * transitionSpeed;
+		}
+
 		BeginDrawing();
 		ClearBackground(BLACK);
 		BeginMode2D(camera);
@@ -144,6 +175,8 @@ int main()
 			planets[i].draw();
 		}
 
+		if(currentState == GAMEPLAY)
+		{
 		if (IsKeyDown(KEY_UP))
 		{
 			camera.zoom += 0.01f; 
@@ -163,9 +196,74 @@ int main()
 		{
 			camera.zoom = 5.0f;
 		} 
-
-
+		}
 		EndMode2D();
+
+		if(currentState == GAMEPLAY)
+		{
+			const char* ReturnText = "Return to Menu";
+			int ReturnFontSize = 20;
+			int ReturnWidth = MeasureText(ReturnText, ReturnFontSize);
+			int ReturnX = 40;
+			int ReturnY = GetScreenHeight() - 70;
+
+			DrawRectangle(ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20, GRAY);
+			DrawText(ReturnText, ReturnX, ReturnY, ReturnFontSize, BLACK);
+
+			Rectangle ReturnButtonRect = { ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20 };
+
+			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			{
+				currentState = MAIN_MENU;
+			}
+
+		}
+		
+
+		if(currentState == MAIN_MENU)
+		{
+			const char* title = "Solar System \nSimulation";
+			const char* startText = "Press to Start";
+			const char* ExitText = "Press to Exit";
+
+			int titleFontSize = 45;
+			int titleWidth = MeasureText("Solar System Simulation", titleFontSize);
+			int titleX = 200;
+			int titleY = 200;
+			DrawText(title, titleX, titleY, titleFontSize, SKYBLUE);
+
+			int startFontSize = 20;
+			int startWidth = MeasureText(startText, startFontSize);
+			int startX = 200;
+			int startY = 350;
+
+			DrawRectangle(startX - 10, startY - 10, startWidth + 20, startFontSize + 20, GRAY);
+			DrawText(startText, startX, startY, startFontSize, BLACK);
+
+			int ExitFontSize = 20;
+			int ExitWidth = MeasureText(startText, startFontSize);
+			int ExitX = 200;
+			int ExitY = 400;
+
+			DrawRectangle(ExitX - 10, ExitY - 10, ExitWidth + 20, ExitFontSize + 20, GRAY);
+			DrawText(ExitText, ExitX, ExitY, ExitFontSize, BLACK);
+
+			Rectangle startButtonRect = { startX - 10, startY - 10, startWidth + 20, startFontSize + 20 };
+
+			Rectangle ExitButtonRect = { ExitX - 10, ExitY - 10, ExitWidth + 20, ExitFontSize + 20 };
+
+			if (CheckCollisionPointRec(mousePos, startButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			{
+				currentState = GAMEPLAY;
+			}
+
+			else if (CheckCollisionPointRec(mousePos, ExitButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			{
+				currentState = EXIT;
+			}
+
+		}
+
 		EndDrawing();
 	}
 
