@@ -112,7 +112,7 @@ int main()
 	camera.target = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f }; 
 	camera.offset = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f }; 
 	camera.rotation = 0.0f;
-	camera.zoom = 0.1f;
+	camera.zoom = 0.16f;
 
 	Sun sun;
 	Texture2D earth = LoadTexture("graphics/earth.png");
@@ -155,6 +155,20 @@ int main()
 
 		if(currentState == MAIN_MENU)
 		{
+			float zoomTarget = 0.16f;
+			float zoomSpeed = 0.04f * transitionSpeed;
+
+			if (fabs(camera.zoom - zoomTarget) > 0.001f) 
+			{
+				if(camera.zoom > zoomTarget)
+					camera.zoom -= zoomSpeed;
+				else
+					camera.zoom += zoomSpeed;
+			}
+			else
+			{
+				camera.zoom = zoomTarget;
+			}
 			camera.target.x += (menuView.x - camera.target.x) * transitionSpeed;
     		camera.target.y += (menuView.y - camera.target.y) * transitionSpeed;
 		}
