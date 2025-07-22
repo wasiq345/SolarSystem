@@ -2,6 +2,8 @@
 #include<raylib.h>
 #include<cmath>
 #include<vector>
+#include<fstream>
+#include<string>
 using namespace std;
 
 
@@ -92,6 +94,27 @@ class Planets
 
 };
 
+// Function to Read the nasa Data file
+void ReadData(float &ra, float &dec, float &delta)
+{
+    ifstream file("earth_data_minimal.txt");
+    if(!file)
+    {
+        cout << "Error occurred while opening file" << endl;
+        ra = dec = delta = 0.0f; 
+        return;
+    }
+
+    if (!(file >> ra >> dec >> delta))
+    {
+        cout << "Error reading data from file" << endl;
+        ra = dec = delta = 0.0f;
+    }
+
+    file.close();
+}
+
+
 
 int main()
 {
@@ -101,12 +124,18 @@ int main()
 	InitWindow(ScreenWidth, ScreenHeight, "SolarSystem");
 	InitAudioDevice();
 
+	//calling Read File function
+	system("python generate_minimal_data.py");
+	float ra, dec, delta;
+	ReadData(ra, dec, delta);
+
 	// All the possible States the Simulation can be in
 	enum gameStates
 	{
 		MAIN_MENU,
 		CONTROLS,
 		GAMEPLAY,
+		EARTH_DATA,
 		EXIT
 	};
 	gameStates currentState = MAIN_MENU;
@@ -123,6 +152,9 @@ int main()
 	PlayMusicStream(bgm);
 	SetMusicVolume(bgm, 0.5f);
 	bool IsMusicPaused = false;
+
+	// Button Sound
+	Sound buttonSound = LoadSound("Audio/beep.wav");
 
 	// Load All Planets Texture
 	Texture2D earth = LoadTexture("graphics/earth.png");
@@ -176,6 +208,7 @@ int main()
 		// M to Mute Music
 		if(IsKeyPressed(KEY_M))
 		{
+			PlaySound(buttonSound);
 			PauseMusicStream(bgm);
 			IsMusicPaused = !IsMusicPaused;
 		}
@@ -262,6 +295,7 @@ int main()
 
 			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 			{
+				PlaySound(buttonSound);
 				currentState = MAIN_MENU;
 			}
 
@@ -274,6 +308,7 @@ int main()
 			const char* startText = "Press to Start";
 			const char* ExitText = "Press to Exit";
 			const char* ControlText = "Controls and Tips";
+			const char* earthDataText = "Live Earth Data";
 
 			// Title Text
 			int titleFontSize = 45;
@@ -305,32 +340,55 @@ int main()
 			int ControlFontSize = 20;
 			int ControlWidth = MeasureText(ControlText, ControlFontSize);
 			int ControlX = 200;
-			int ControlY = 400;
+			int ControlY = 450;
 
 			DrawRectangle(ControlX - 10, ControlY - 10, ControlWidth + 20, ControlFontSize + 20, GRAY);
 			DrawText(ControlText, ControlX, ControlY, ControlFontSize, BLACK);
+
+			
+		   // Earth Data Button
+			int earthDataFontSize = 20;
+			int earthDataWidth = MeasureText(ControlText, ControlFontSize);
+			int earthDataX = 200;
+			int earthDataY = 400;
+
+			DrawRectangle(earthDataX - 10, earthDataY - 10, earthDataWidth + 20, earthDataFontSize + 20, GRAY);
+			DrawText(earthDataText, earthDataX, earthDataY, earthDataFontSize, BLACK);
 
 			// Rectangles of all the buttons for mouse collision detection
 			Rectangle startButtonRect = { startX - 10, startY - 10, startWidth + 20, startFontSize + 20 };
 
 			Rectangle ExitButtonRect = { ExitX - 10, ExitY - 10, ExitWidth + 20, ExitFontSize + 20 };
 
-			Rectangle AboutButtonRect = { ControlX - 10, ControlY - 10, ControlWidth + 20, ControlFontSize + 20 };
+			Rectangle ControlButtonRect = { ControlX - 10, ControlY - 10, ControlWidth + 20, ControlFontSize + 20 };
+
+			Rectangle earthDataButtonRect = { earthDataX - 10, earthDataY - 10, earthDataWidth + 20, earthDataFontSize + 20 };
+
+
 			
 			// checking collisions of buttons with mouse click
 			if (CheckCollisionPointRec(mousePos, startButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 			{
+				PlaySound(buttonSound);
 				currentState = GAMEPLAY;
 			}
 
 			else if (CheckCollisionPointRec(mousePos, ExitButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 			{
+				PlaySound(buttonSound);
 				currentState = EXIT;
 			}
 
-			else if (CheckCollisionPointRec(mousePos, AboutButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			else if (CheckCollisionPointRec(mousePos, ControlButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 			{
+				PlaySound(buttonSound);
 				currentState = CONTROLS;
+			}
+
+			else if (CheckCollisionPointRec(mousePos, earthDataButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			{
+				PlaySound(buttonSound);
+				currentState = EARTH_DATA;
 			}
 
 		}
@@ -385,6 +443,59 @@ int main()
 
 			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 			{
+				PlaySound(buttonSound);
+				currentState = MAIN_MENU;
+			}
+		}
+
+		if(currentState == EARTH_DATA)
+		{
+			const char* title = "Live Earth Data";
+			const char* ReturnText = "Return to Menu";
+
+			// Title Text
+			int titleFontSize = 35;
+			int titleWidth = MeasureText(title, titleFontSize);
+			int titleX = 100;
+			int titleY = 50;
+			DrawText(title, titleX, titleY, titleFontSize, SKYBLUE);
+			DrawLine(titleX, titleY + 50, titleWidth + 90, titleY + 50, WHITE);
+
+			// Data Display Section
+			int textFontSize = 19;
+			int textX = 120;
+			int textY = titleY + 80;
+			int lineSpacing = 35;
+
+			DrawText("- Right Ascension (RA):", textX, textY, textFontSize, LIGHTGRAY);
+			DrawText(TextFormat("%.2f deg", ra), textX + 300, textY, textFontSize, RAYWHITE);
+
+			DrawText("- Declination (DEC):", textX, textY + lineSpacing, textFontSize, LIGHTGRAY);
+			DrawText(TextFormat("%.2f deg", dec), textX + 300, textY + lineSpacing, textFontSize, RAYWHITE);
+
+			DrawText("- Distance:", textX, textY + 2 * lineSpacing, textFontSize, LIGHTGRAY);
+			DrawText(TextFormat("%.2f AU", delta), textX + 300, textY + 2 * lineSpacing, textFontSize, RAYWHITE);
+
+			// Explanatory Tips
+			int tipsY = textY + 4 * lineSpacing;
+			DrawText("RA/DEC:   Earth position in the sky.", textX, tipsY, textFontSize - 2, GRAY);
+			DrawText("Distance:   Current distance from observer in AU.", textX, tipsY + lineSpacing, textFontSize - 2, GRAY);
+
+			// Return Menu Button
+			int ReturnFontSize = 20;
+			int ReturnWidth = MeasureText(ReturnText, ReturnFontSize);
+			int ReturnX = 40;
+			int ReturnY = GetScreenHeight() - 70;
+
+			DrawRectangle(ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20, GRAY);
+			DrawText(ReturnText, ReturnX, ReturnY, ReturnFontSize, BLACK);
+
+			// Checking collision with Mouse
+			Rectangle ReturnButtonRect = { ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20 };
+
+			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+			{
+				PlaySound(buttonSound);
 				currentState = MAIN_MENU;
 			}
 		}
@@ -403,6 +514,7 @@ int main()
 	UnloadTexture(uranus);
 	UnloadTexture(neptune);
 	UnloadMusicStream(bgm);
+	UnloadSound(buttonSound);
 	CloseAudioDevice();
 	CloseWindow();
 	return 0;
