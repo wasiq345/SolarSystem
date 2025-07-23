@@ -6,6 +6,16 @@
 #include<string>
 using namespace std;
 
+// All the possible States the Simulation can be in
+	enum gameStates
+	{
+		MAIN_MENU,
+		CONTROLS,
+		GAMEPLAY,
+		EARTH_DATA,
+		EXIT
+	};
+
 
 class Sun
 {
@@ -73,6 +83,7 @@ class Planets
    	{
    		angle += AngularSpeed;
 
+		// Using cosine for x and sine for y to create a circular orbit
    		position.x = sun -> position.x + OrbitDistance.x * cos(angle);
    		position.y = sun -> position.y + OrbitDistance.y * sin(angle);
    		dest = { position.x, position.y,
@@ -85,6 +96,7 @@ class Planets
    	{
    		sun-> draw();
 
+		// Draw the orbit ellipse
 		DrawEllipseLines(sun->position.x, sun->position.y, OrbitDistance.x, OrbitDistance.y, GRAY);
 
 		DrawTexturePro(planet, source, dest, origin, rotation, WHITE);
@@ -114,6 +126,28 @@ void ReadData(float &ra, float &dec, float &delta)
     file.close();
 }
 
+// Function to add buttons
+bool DrawButton(const char* text, int x, int y, int fontSize, Sound buttonSound, Vector2 mousePos, gameStates &currentState, gameStates targetState)
+{
+    int width = MeasureText(text, fontSize);
+    Rectangle buttonRect = { x - 10, y - 10, width + 20, fontSize + 20 };
+
+    // Hover effect
+    Color buttonColor = CheckCollisionPointRec(mousePos, buttonRect) ? SKYBLUE : GRAY;
+    DrawRectangle(x - 10, y - 10, width + 20, fontSize + 20, buttonColor);
+    DrawText(text, x, y, fontSize, BLACK);
+
+    // Click handling
+    if (CheckCollisionPointRec(mousePos, buttonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        PlaySound(buttonSound);
+        currentState = targetState;
+        return true;
+    }
+    return false;
+}
+
+
 
 
 int main()
@@ -125,19 +159,10 @@ int main()
 	InitAudioDevice();
 
 	//calling Read File function
-	system("python generate_minimal_data.py");
+	system("python generate_minimal_data.py"); // Running python script to generate data file
 	float ra, dec, delta;
 	ReadData(ra, dec, delta);
 
-	// All the possible States the Simulation can be in
-	enum gameStates
-	{
-		MAIN_MENU,
-		CONTROLS,
-		GAMEPLAY,
-		EARTH_DATA,
-		EXIT
-	};
 	gameStates currentState = MAIN_MENU;
 
 	// Set the Key Camera Values
@@ -148,6 +173,7 @@ int main()
 	camera.zoom = 0.16f;
 
 	Sun sun;
+	// Load Background Music
 	Music bgm = LoadMusicStream("Audio/BackgroundMusic.ogg");
 	PlayMusicStream(bgm);
 	SetMusicVolume(bgm, 0.5f);
@@ -277,28 +303,10 @@ int main()
 		}
 		EndMode2D();
 
-		// Displaying the Return to Menu button
+		// Displaying the Return to Menu button 
 		if(currentState == GAMEPLAY)
 		{
-			const char* ReturnText = "Return to Menu";
-
-			int ReturnFontSize = 20;
-			int ReturnWidth = MeasureText(ReturnText, ReturnFontSize);
-			int ReturnX = 40;
-			int ReturnY = GetScreenHeight() - 70;
-
-			DrawRectangle(ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20, GRAY);
-			DrawText(ReturnText, ReturnX, ReturnY, ReturnFontSize, BLACK);
-
-			// Cheking collision with Mouse
-			Rectangle ReturnButtonRect = { ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20 };
-
-			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = MAIN_MENU;
-			}
-
+			DrawButton("Return to Menu", 40, GetScreenHeight() - 70, 20, buttonSound, mousePos, currentState, MAIN_MENU);
 		}
 		
 
@@ -319,77 +327,16 @@ int main()
 			DrawLine(titleX, titleY + 100, titleWidth, titleY + 100, WHITE);
 
 			// Start Button
-			int startFontSize = 20;
-			int startWidth = MeasureText(startText, startFontSize);
-			int startX = 200;
-			int startY = 350;
-
-			DrawRectangle(startX - 10, startY - 10, startWidth + 20, startFontSize + 20, GRAY);
-			DrawText(startText, startX, startY, startFontSize, BLACK);
+			DrawButton(startText, 200, 350, 20, buttonSound, mousePos, currentState, GAMEPLAY);
 
 			// Exit Button
-			int ExitFontSize = 20;
-			int ExitWidth = MeasureText(startText, startFontSize);
-			int ExitX = 200;
-			int ExitY = 600;
-
-			DrawRectangle(ExitX - 10, ExitY - 10, ExitWidth + 20, ExitFontSize + 20, GRAY);
-			DrawText(ExitText, ExitX, ExitY, ExitFontSize, BLACK);
+			DrawButton(ExitText, 200, 600, 20, buttonSound, mousePos, currentState, EXIT);
 
 		   // Control Button 
-			int ControlFontSize = 20;
-			int ControlWidth = MeasureText(ControlText, ControlFontSize);
-			int ControlX = 200;
-			int ControlY = 450;
-
-			DrawRectangle(ControlX - 10, ControlY - 10, ControlWidth + 20, ControlFontSize + 20, GRAY);
-			DrawText(ControlText, ControlX, ControlY, ControlFontSize, BLACK);
-
+		   DrawButton(ControlText, 200, 450, 20, buttonSound, mousePos, currentState, CONTROLS);
 			
 		   // Earth Data Button
-			int earthDataFontSize = 20;
-			int earthDataWidth = MeasureText(ControlText, ControlFontSize);
-			int earthDataX = 200;
-			int earthDataY = 400;
-
-			DrawRectangle(earthDataX - 10, earthDataY - 10, earthDataWidth + 20, earthDataFontSize + 20, GRAY);
-			DrawText(earthDataText, earthDataX, earthDataY, earthDataFontSize, BLACK);
-
-			// Rectangles of all the buttons for mouse collision detection
-			Rectangle startButtonRect = { startX - 10, startY - 10, startWidth + 20, startFontSize + 20 };
-
-			Rectangle ExitButtonRect = { ExitX - 10, ExitY - 10, ExitWidth + 20, ExitFontSize + 20 };
-
-			Rectangle ControlButtonRect = { ControlX - 10, ControlY - 10, ControlWidth + 20, ControlFontSize + 20 };
-
-			Rectangle earthDataButtonRect = { earthDataX - 10, earthDataY - 10, earthDataWidth + 20, earthDataFontSize + 20 };
-
-
-			
-			// checking collisions of buttons with mouse click
-			if (CheckCollisionPointRec(mousePos, startButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = GAMEPLAY;
-			}
-
-			else if (CheckCollisionPointRec(mousePos, ExitButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = EXIT;
-			}
-
-			else if (CheckCollisionPointRec(mousePos, ControlButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = CONTROLS;
-			}
-
-			else if (CheckCollisionPointRec(mousePos, earthDataButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = EARTH_DATA;
-			}
+		   DrawButton(earthDataText, 200, 400, 20, buttonSound, mousePos, currentState, EARTH_DATA);
 
 		}
 
@@ -430,22 +377,7 @@ int main()
 			DrawText("- Future updates will add planet facts!", textX, tipsTitleY + 140, textFontSize, LIGHTGRAY);
 
 			// Return Menu Button
-			int ReturnFontSize = 20;
-			int ReturnWidth = MeasureText(ReturnText, ReturnFontSize);
-			int ReturnX = 40;
-			int ReturnY = GetScreenHeight() - 70;
-
-			DrawRectangle(ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20, GRAY);
-			DrawText(ReturnText, ReturnX, ReturnY, ReturnFontSize, BLACK);
-
-			// Cheking collision with Mouse
-			Rectangle ReturnButtonRect = { ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20 };
-
-			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = MAIN_MENU;
-			}
+			DrawButton(ReturnText, 40, GetScreenHeight() - 70, 20, buttonSound, mousePos, currentState, MAIN_MENU);
 		}
 
 		if(currentState == EARTH_DATA)
@@ -482,22 +414,8 @@ int main()
 			DrawText("Distance:   Current distance from observer in AU.", textX, tipsY + lineSpacing, textFontSize - 2, GRAY);
 
 			// Return Menu Button
-			int ReturnFontSize = 20;
-			int ReturnWidth = MeasureText(ReturnText, ReturnFontSize);
-			int ReturnX = 40;
-			int ReturnY = GetScreenHeight() - 70;
-
-			DrawRectangle(ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20, GRAY);
-			DrawText(ReturnText, ReturnX, ReturnY, ReturnFontSize, BLACK);
-
-			// Checking collision with Mouse
-			Rectangle ReturnButtonRect = { ReturnX - 10, ReturnY - 10, ReturnWidth + 20, ReturnFontSize + 20 };
-
-			if (CheckCollisionPointRec(mousePos, ReturnButtonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-			{
-				PlaySound(buttonSound);
-				currentState = MAIN_MENU;
-			}
+			DrawButton(ReturnText, 40, GetScreenHeight() - 70, 20, buttonSound, mousePos, currentState, MAIN_MENU);
+			
 		}
 
 		EndDrawing();
