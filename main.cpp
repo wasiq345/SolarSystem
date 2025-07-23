@@ -6,6 +6,9 @@
 #include<string>
 using namespace std;
 
+static float cameraOffsetX = 0.0f;
+static float cameraOffsetY = 0.0f;
+
 // All the possible States the Simulation can be in
 	enum gameStates
 	{
@@ -133,17 +136,27 @@ bool DrawButton(const char* text, int x, int y, int fontSize, Sound buttonSound,
     Rectangle buttonRect = { x - 10, y - 10, width + 20, fontSize + 20 };
 
     // Hover effect
-    Color buttonColor = CheckCollisionPointRec(mousePos, buttonRect) ? SKYBLUE : GRAY;
+    Color buttonColor;
+	if(CheckCollisionPointRec(mousePos, buttonRect))
+	{
+		buttonColor = SKYBLUE;
+	}
+	else
+	{
+		buttonColor = GRAY;
+	}
+
     DrawRectangle(x - 10, y - 10, width + 20, fontSize + 20, buttonColor);
     DrawText(text, x, y, fontSize, BLACK);
 
-    // Click handling
+    // check collison
     if (CheckCollisionPointRec(mousePos, buttonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         PlaySound(buttonSound);
         currentState = targetState;
         return true;
     }
+
     return false;
 }
 
@@ -171,6 +184,7 @@ int main()
 	camera.offset = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f }; 
 	camera.rotation = 0.0f;
 	camera.zoom = 0.16f;
+
 
 	Sun sun;
 	// Load Background Music
@@ -260,11 +274,11 @@ int main()
     		camera.target.y += (menuView.y - camera.target.y) * transitionSpeed;
 		}
 
-		// Set The SUN at centre of screen Smoothly
+		// Smooth camera movement
 		else if (currentState == GAMEPLAY)
 		{
-			camera.target.x += (gameplayView.x - camera.target.x) * transitionSpeed;
-			camera.target.y += (gameplayView.y - camera.target.y) * transitionSpeed;
+			camera.target.x += ((gameplayView.x + cameraOffsetX) - camera.target.x) * transitionSpeed;
+			camera.target.y += ((gameplayView.y + cameraOffsetY) - camera.target.y) * transitionSpeed;
 		}
 
 		BeginDrawing();
@@ -280,26 +294,26 @@ int main()
 
 		if(currentState == GAMEPLAY)
 		{
+			float MoveSpeed = 14.0f;
 			// Zooming functionality
-			if (IsKeyDown(KEY_UP))
-			{
-				camera.zoom += 0.01f; 
-			}    
+			if (IsKeyDown(KEY_UP)) camera.zoom += 0.01f; 
+			if (IsKeyDown(KEY_DOWN)) camera.zoom -= 0.01f;
+	
+			if (camera.zoom < 0.1f) camera.zoom = 0.1f; 
+			if (camera.zoom > 2.0f) camera.zoom = 2.0f; 
 
-			if (IsKeyDown(KEY_DOWN))
-			{
-				camera.zoom -= 0.01f;
-			}   
+			// Camera Movement
+			if (IsKeyDown(KEY_A)) cameraOffsetX -= MoveSpeed; 
+			if (IsKeyDown(KEY_D)) cameraOffsetX += MoveSpeed;
 
-			if (camera.zoom < 0.1f) 
-			{
-				camera.zoom = 0.1f;
-			}
+			if (IsKeyDown(KEY_W)) cameraOffsetY -= MoveSpeed;
+			if (IsKeyDown(KEY_S)) cameraOffsetY += MoveSpeed;
+		
+			if(cameraOffsetX < -5000) cameraOffsetX = -5000; 
+			if(cameraOffsetX > 5000) cameraOffsetX = 5000;
 
-			if (camera.zoom > 5.0f)
-			{
-				camera.zoom = 5.0f;
-			} 
+			if (cameraOffsetY < -5000) cameraOffsetY = -5000;
+			if (cameraOffsetY > 5000) cameraOffsetY = 5000;
 		}
 		EndMode2D();
 
@@ -309,7 +323,6 @@ int main()
 			DrawButton("Return to Menu", 40, GetScreenHeight() - 70, 20, buttonSound, mousePos, currentState, MAIN_MENU);
 		}
 		
-
 		if(currentState == MAIN_MENU)
 		{
 			const char* title = "Solar System \nSimulation";
@@ -360,8 +373,8 @@ int main()
 			int textY = titleY + 80;
 			int lineSpacing = 35;
 
-			DrawText("- Zoom In:        UP Arrow", textX, textY, textFontSize, LIGHTGRAY);
-			DrawText("- Zoom Out:     DOWN Arrow", textX, textY + lineSpacing, textFontSize, LIGHTGRAY);
+			DrawText("- Zoom In / Out:        UP / Down Arrows", textX, textY, textFontSize, LIGHTGRAY);
+			DrawText("- Movement:     WASD keys", textX, textY + lineSpacing, textFontSize, LIGHTGRAY);
 			DrawText("- Start Simulation:  Click Start Button", textX, textY + 2 * lineSpacing, textFontSize, LIGHTGRAY);
 			DrawText("- View Planet Info:  Click on a Planet", textX, textY + 3 * lineSpacing, textFontSize, LIGHTGRAY);
 			DrawText("- Mute Music:       M Key", textX, textY + 4 * lineSpacing, textFontSize, LIGHTGRAY);
