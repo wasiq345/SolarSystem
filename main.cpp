@@ -235,6 +235,8 @@ int main()
 	Texture2D uranusTex = LoadTexture("graphics/uranus.png");
 	Texture2D neptuneTex = LoadTexture("graphics/neptune.png");
 
+	Texture2D earthGraph = LoadTexture("graphics/earth_ra.png");
+
 	// Push The Planets objects to vector
 	vector<Planets> planets;
 
@@ -445,10 +447,10 @@ int main()
 			DrawLine(titleX, titleY + 50, titleWidth + 90, titleY + 50, WHITE);
 
 			// Data Display Section
-			int textFontSize = 19;
+			int textFontSize = 14;
 			int textX = 120;
-			int textY = titleY + 80;
-			int lineSpacing = 35;
+			int textY = titleY + 60;
+			int lineSpacing = 30;
 
 			DrawText("- Right Ascension (RA):", textX, textY, textFontSize, LIGHTGRAY);
 			DrawText(TextFormat("%.2f deg", ra), textX + 300, textY, textFontSize, RAYWHITE);
@@ -460,9 +462,12 @@ int main()
 			DrawText(TextFormat("%.2f AU", delta), textX + 300, textY + 2 * lineSpacing, textFontSize, RAYWHITE);
 
 			// Explanatory Tips
-			int tipsY = textY + 4 * lineSpacing;
+			int tipsY = textY + 3 * lineSpacing;
 			DrawText("RA/DEC:   Earth position in the sky.", textX, tipsY, textFontSize - 2, GRAY);
 			DrawText("Distance:   Current distance from observer in AU.", textX, tipsY + lineSpacing, textFontSize - 2, GRAY);
+
+			// Earth Graphical Representation
+			DrawTextureEx(earthGraph,{float(textX - 90), float(tipsY + 70)}, 0.0f, 0.76f, WHITE);
 
 			// Return Menu Button
 			DrawButton(ReturnText, 40, GetScreenHeight() - 70, 20, buttonSound, mousePos, currentState, MAIN_MENU);
@@ -482,6 +487,7 @@ int main()
 	UnloadTexture(saturnTex);
 	UnloadTexture(uranusTex);
 	UnloadTexture(neptuneTex);
+	UnloadTexture(earthGraph);
 	UnloadMusicStream(bgm);
 	UnloadSound(buttonSound);
 	CloseAudioDevice();
