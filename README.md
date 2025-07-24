@@ -118,6 +118,6 @@ Interstellar OST by Hans Zimmer (for educational demo only)
 This project is open source under the MIT License. Feel free to fork and build upon it for educational purposes.
 
 🙌 Connect
-If you found this useful or have suggestions for improvement, feel free to open an issue or connect with me on Linkedin.
+If you found this useful or have suggestions for improvement, feel free to open an issue or connect with me on Linkedin www.linkedin.com/in/wasiq-azeem-730215367 .
 
 🚀 “The important thing is not to stop questioning. Curiosity has its own reason for existing.” – Einstein
