@@ -55,9 +55,10 @@ public:
 
 class Planets
 {
+	string name;
 	Vector2 OrbitDistance;
 	float scale;
-	Texture2D planet;
+	Texture2D texture;
 	float angle;
 	float AngularSpeed;
 	float rotation;
@@ -68,18 +69,23 @@ class Planets
 	Sun *sun;
 
    public:
+	friend void DisplayPlanetName(const Planets &p);
+	friend Rectangle RectPlanet(const Planets &p);
 
-   	Planets(float OrbitX, float OrbitY, float scale, float AngularSpeed, float rotation, Texture2D planetTex, Sun *s)
+   public:
+
+   	Planets(float OrbitX, float OrbitY, float scale, float AngularSpeed, float rotation, Texture2D planetTex, string name, Sun *s)
    	{
    		this -> OrbitDistance.x = OrbitX;
    		this -> OrbitDistance.y = OrbitY;
    		this -> AngularSpeed = AngularSpeed;
    		this -> scale = scale;
    		this -> rotation = rotation;
-   		planet = planetTex;
+		this -> name = name;
+   		texture = planetTex;
    		sun = s;
    		angle = 0.0f;
-   		source = { 0.0f, 0.0f, (float)planet.width, (float)planet.height };
+   		source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
    	}
 
    	void Motion()
@@ -90,8 +96,8 @@ class Planets
    		position.x = sun -> position.x + OrbitDistance.x * cos(angle);
    		position.y = sun -> position.y + OrbitDistance.y * sin(angle);
    		dest = { position.x, position.y,
-                   planet.width * scale,
-                   planet.height * scale };
+                   texture.width * scale,
+                   texture.height * scale };
         origin = { dest.width / 2, dest.height / 2 };
    	}
 
@@ -102,12 +108,34 @@ class Planets
 		// Draw the orbit ellipse
 		DrawEllipseLines(sun->position.x, sun->position.y, OrbitDistance.x, OrbitDistance.y, GRAY);
 
-		DrawTexturePro(planet, source, dest, origin, rotation, WHITE);
+		DrawTexturePro(texture, source, dest, origin, rotation, WHITE);
 		rotation += 0.5f;
 	}
 
 
 };
+
+// Function to display the name of the planet
+ void DisplayPlanetName(const Planets &p)
+{
+	int fontSize = 50;
+    float planetBottomY = p.position.y + (p.texture.height * p.scale / 2);
+	int textWidth = MeasureText(p.name.c_str(), fontSize);
+    
+    DrawText(p.name.c_str(), p.position.x - textWidth / 2, planetBottomY + 10, fontSize, WHITE);
+}
+
+// Function to get Rectangle of planets
+ Rectangle RectPlanet(const Planets &p)
+{
+	Rectangle planet;
+	planet.x = p.position.x - (p.texture.width * p.scale / 2);
+	planet.y = p.position.y - (p.texture.height * p.scale / 2);
+	planet.width = p.texture.width * p.scale;
+	planet.height = p.texture.height * p.scale;
+
+	return planet;
+}
 
 // Function to Read the nasa Data file
 void ReadData(float &ra, float &dec, float &delta)
@@ -171,7 +199,7 @@ int main()
 	InitWindow(ScreenWidth, ScreenHeight, "SolarSystem");
 	InitAudioDevice();
 
-	//calling Read File function
+	// calling Read File function
 	system("python generate_minimal_data.py"); // Running python script to generate data file
 	float ra, dec, delta;
 	ReadData(ra, dec, delta);
@@ -197,28 +225,28 @@ int main()
 	Sound buttonSound = LoadSound("Audio/beep.wav");
 
 	// Load All Planets Texture
-	Texture2D earth = LoadTexture("graphics/earth.png");
-	Texture2D mercury = LoadTexture("graphics/mercury.png");
-	Texture2D venus = LoadTexture("graphics/venus.png");
-	Texture2D mars = LoadTexture("graphics/mars.png");
-	Texture2D jupiter = LoadTexture("graphics/jupiter.png");
-	Texture2D saturn_rings = LoadTexture("graphics/saturn-rings.png");
-	Texture2D saturn = LoadTexture("graphics/saturn.png");
-	Texture2D uranus = LoadTexture("graphics/uranus.png");
-	Texture2D neptune = LoadTexture("graphics/neptune.png");
+	Texture2D earthTex = LoadTexture("graphics/earth.png");
+	Texture2D mercuryTex = LoadTexture("graphics/mercury.png");
+	Texture2D venusTex = LoadTexture("graphics/venus.png");
+	Texture2D marsTex = LoadTexture("graphics/mars.png");
+	Texture2D jupiterTex = LoadTexture("graphics/jupiter.png");
+	Texture2D saturn_ringsTex = LoadTexture("graphics/saturn-rings.png");
+	Texture2D saturnTex = LoadTexture("graphics/saturn.png");
+	Texture2D uranusTex = LoadTexture("graphics/uranus.png");
+	Texture2D neptuneTex = LoadTexture("graphics/neptune.png");
 
 	// Push The Planets objects to vector
 	vector<Planets> planets;
 
-	planets.push_back(Planets(528, 480, 0.4f, 0.005, 0.5f, mercury, &sun)); 
-	planets.push_back(Planets(680, 680, 0.2f, 0.0035, 0.5f, venus, &sun));  
-	planets.push_back(Planets(1050, 1050, 0.5f, 0.003, 0.5f, earth, &sun));   
-	planets.push_back(Planets(1480,1350, 0.3f, 0.003, 0.5f, mars, &sun)); 
-	planets.push_back(Planets(1750,1750, 0.8f, 0.0028, 0.5f, jupiter, &sun)); 
-	planets.push_back(Planets(2150,2150, 0.6f, 0.0027, 0.5f, saturn_rings, &sun));
-	planets.push_back(Planets(2150,2150, 0.7f, 0.0027, 0.5f, saturn, &sun));
-	planets.push_back(Planets(2650,2650, 0.8f, 0.0026, 0.5f, uranus, &sun));
-	planets.push_back(Planets(3000,3000, 0.6f, 0.0025, 0.5f, neptune, &sun));
+	planets.push_back(Planets(528, 480, 0.4f, 0.005, 0.5f, mercuryTex, "Mercury", &sun)); 
+	planets.push_back(Planets(680, 680, 0.2f, 0.0035, 0.5f, venusTex, "Venus", &sun));  
+	planets.push_back(Planets(1050, 1050, 0.5f, 0.003, 0.5f, earthTex, "Earth", &sun));   
+	planets.push_back(Planets(1480,1350, 0.3f, 0.003, 0.5f, marsTex, "Mars", &sun)); 
+	planets.push_back(Planets(1750,1750, 0.8f, 0.0028, 0.5f, jupiterTex, "Jupiter", &sun)); 
+	planets.push_back(Planets(2150,2150, 0.6f, 0.0027, 0.5f, saturn_ringsTex, "Saturn Rings", &sun));
+	planets.push_back(Planets(2150,2150, 0.7f, 0.0027, 0.5f, saturnTex, "Saturn", &sun));
+	planets.push_back(Planets(2650,2650, 0.8f, 0.0026, 0.5f, uranusTex, "Uranus", &sun));
+	planets.push_back(Planets(3000,3000, 0.6f, 0.0025, 0.5f, neptuneTex, "Naptune", &sun));
 
 
 	SetTargetFPS(60);
@@ -229,6 +257,7 @@ int main()
 		Vector2 menuView = {sun.position.x - 2800, sun.position.y};
 		Vector2 gameplayView = sun.position;
 		Vector2 mousePos = GetMousePosition();
+		Vector2 worldMouse = GetScreenToWorld2D(mousePos, camera);
 		float transitionSpeed = 0.04f;
 
 		if(currentState == EXIT)
@@ -274,7 +303,7 @@ int main()
     		camera.target.y += (menuView.y - camera.target.y) * transitionSpeed;
 		}
 
-		// Smooth camera movement
+		// Smooth camera movement in Gameplay State
 		else if (currentState == GAMEPLAY)
 		{
 			camera.target.x += ((gameplayView.x + cameraOffsetX) - camera.target.x) * transitionSpeed;
@@ -290,6 +319,15 @@ int main()
 		{
 			planets[i].Motion();
 			planets[i].draw();
+
+			 // Set the Rectangle for the planet
+			Rectangle planetRect = RectPlanet(planets[i]);;
+
+			// If mouse is over planet, display name
+			if (CheckCollisionPointRec(worldMouse, planetRect))
+			{
+				DisplayPlanetName(planets[i]);
+			}
 		}
 
 		if(currentState == GAMEPLAY)
@@ -435,15 +473,15 @@ int main()
 	}
 
 	// Unload all the textures and music
-	UnloadTexture(earth);
-	UnloadTexture(mercury);
-	UnloadTexture(venus);
-	UnloadTexture(mars);
-	UnloadTexture(jupiter);
-	UnloadTexture(saturn_rings);
-	UnloadTexture(saturn);
-	UnloadTexture(uranus);
-	UnloadTexture(neptune);
+	UnloadTexture(earthTex);
+	UnloadTexture(mercuryTex);
+	UnloadTexture(venusTex);
+	UnloadTexture(marsTex);
+	UnloadTexture(jupiterTex);
+	UnloadTexture(saturn_ringsTex);
+	UnloadTexture(saturnTex);
+	UnloadTexture(uranusTex);
+	UnloadTexture(neptuneTex);
 	UnloadMusicStream(bgm);
 	UnloadSound(buttonSound);
 	CloseAudioDevice();
